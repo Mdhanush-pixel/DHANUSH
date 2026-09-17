@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S. | Master Tactical OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070a;
+    --panel:#0b1119;
+    --panel-2:#0f1620;
+    --line:#1c2733;
+    --gold:#e0b23d;
+    --gold-dim:#8a6f27;
+    --cyan:#4fd6e8;
+    --red:#ff4b3e;
+    --green:#3ee08a;
+    --text:#d8e1ea;
+    --text-dim:#7c8998;
+    --font-display:'Chakra Petch', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(79,214,232,0.06), transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(224,178,61,0.05), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-mono);
+    line-height:1.55;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--gold-dim);color:#0a0a0a;}
+
+  /* ---------- layout shell ---------- */
+  .frame{max-width:1180px;margin:0 auto;padding:0 24px 120px;}
+  header.hero{
+    padding:36px 24px 28px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 68px);
+    pointer-events:none;
+  }
+  .hero-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+  .eyebrow{font-size:12px;letter-spacing:0.12em;color:var(--cyan);margin:0 0 10px;}
+  h1.title{
+    font-family:var(--font-display);
+    font-size:clamp(34px,6vw,58px);
+    font-weight:700;
+    margin:0;
+    color:#f2f6f9;
+    text-shadow:0 0 22px rgba(224,178,61,0.25);
+  }
+  .subtitle{color:var(--text-dim);margin:8px 0 0;font-size:14px;}
+  .status-pill{
+    display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:8px 14px;border-radius:2px;
+    font-size:12px;color:var(--green);
+  }
+  .status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  nav.jump{
+    display:flex;flex-wrap:wrap;gap:2px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    position:sticky;top:0;z-index:20;
+  }
+  nav.jump .frame{display:flex;padding:0 24px;flex-wrap:wrap;}
+  nav.jump a{
+    padding:14px 16px;font-size:12.5px;letter-spacing:0.06em;
+    color:var(--text-dim);text-decoration:none;border-bottom:2px solid transparent;
+  }
+  nav.jump a:hover, nav.jump a.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .mic-nav{margin-left:auto;display:flex;align-items:center;padding-right:4px;}
+
+  section{padding:56px 0 0;scroll-margin-top:56px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+  h2.section-title{
+    font-family:var(--font-display);
+    font-size:26px;margin:0;color:#f2f6f9;
+    display:flex;align-items:center;gap:12px;
+  }
+  h2.section-title::before{content:"";width:26px;height:2px;background:var(--gold);display:inline-block;}
+  .section-note{color:var(--text-dim);font-size:12.5px;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:22px;
+  }
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:820px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+  /* suit mechanics bars */
+  .metric{margin-bottom:16px;}
+  .metric:last-child{margin-bottom:0;}
+  .metric-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:6px;letter-spacing:0.04em;}
+  .metric-label span.val{color:var(--cyan);}
+  .bar-track{height:8px;background:#0a0f16;border:1px solid var(--line);border-radius:1px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));}
+  .bar-fill.cyan{background:linear-gradient(90deg,#1a5a63,var(--cyan));}
+  .bar-fill.red{background:linear-gradient(90deg,#7a1f1a,var(--red));}
+
+  button.diag-btn{
+    margin-top:20px;
+    background:transparent;border:1px solid var(--gold-dim);color:var(--gold);
+    font-family:var(--font-mono);font-size:12.5px;letter-spacing:0.06em;
+    padding:10px 16px;border-radius:2px;cursor:pointer;
+  }
+  button.diag-btn:hover{background:rgba(224,178,61,0.08);}
+
+  /* terminal log */
+  .terminal{
+    background:#050a0f;border:1px solid var(--line);border-radius:3px;
+    padding:16px 18px;height:220px;overflow-y:auto;font-size:13px;
+  }
+  .terminal .line{margin-bottom:8px;}
+  .terminal .tag{color:var(--cyan);}
+  .terminal .tag.jarvis{color:var(--gold);}
+  .terminal .tag.warn{color:var(--red);}
+
+  /* origin */
+  .origin-copy p{color:var(--text);font-size:14.5px;max-width:70ch;}
+  .origin-copy p+p{margin-top:14px;}
+  .timeline{margin-top:24px;border-left:1px solid var(--line);padding-left:20px;}
+  .timeline-item{position:relative;margin-bottom:20px;}
+  .timeline-item::before{content:"";position:absolute;left:-25px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--gold);}
+  .timeline-year{font-family:var(--font-display);color:var(--gold);font-size:13px;letter-spacing:0.05em;}
+  .timeline-text{font-size:13.5px;color:var(--text-dim);margin-top:2px;}
+
+  /* workshop / armor cards */
+  .card{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:3px;
+    padding:18px;transition:border-color .15s ease;
+  }
+  .card:hover{border-color:var(--gold-dim);}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .card-name{font-family:var(--font-display);font-size:16px;color:#f2f6f9;}
+  .card-tag{font-size:10.5px;letter-spacing:0.08em;color:var(--bg);background:var(--cyan);padding:3px 7px;border-radius:2px;}
+  .card-tag.weapon{background:var(--red);}
+  .card-tag.retired{background:var(--text-dim);}
+  .card-spec{font-size:12.5px;color:var(--text-dim);margin:3px 0;}
+  .card-spec b{color:var(--text);font-weight:500;}
+
+  /* armor specs list */
+  .spec-row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);}
+  .spec-row:last-child{border-bottom:none;}
+  .spec-key{width:120px;flex:none;color:var(--cyan);font-size:12px;letter-spacing:0.05em;}
+  .spec-val{font-size:13.5px;color:var(--text);}
+
+  /* threat table */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;color:var(--text-dim);font-weight:500;font-size:11.5px;letter-spacing:0.06em;padding:10px 12px;border-bottom:1px solid var(--line);}
+  td{padding:12px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  .threat{padding:3px 8px;border-radius:2px;font-size:11px;letter-spacing:0.04em;}
+  .threat.critical{background:rgba(255,75,62,0.15);color:var(--red);}
+  .threat.extreme{background:rgba(255,75,62,0.28);color:#ff8177;}
+  .threat.moderate{background:rgba(224,178,61,0.15);color:var(--gold);}
+  .threat.high{background:rgba(255,75,62,0.15);color:var(--red);}
+  .status-tag{color:var(--text-dim);}
+
+  /* chat */
+  .chat-shell{display:flex;flex-direction:column;height:420px;}
+  .chat-log{flex:1;overflow-y:auto;padding-right:6px;margin-bottom:14px;}
+  .msg{margin-bottom:14px;max-width:85%;font-size:13.5px;}
+  .msg.user{margin-left:auto;text-align:right;}
+  .msg .bubble{display:inline-block;padding:10px 14px;border-radius:3px;text-align:left;}
+  .msg.jarvis .bubble{background:var(--panel-2);border:1px solid var(--line);color:var(--text);}
+  .msg.user .bubble{background:rgba(224,178,61,0.1);border:1px solid var(--gold-dim);color:#f2e6c8;}
+  .msg .who{font-size:10.5px;color:var(--text-dim);margin-bottom:4px;letter-spacing:0.06em;}
+  .chat-input-row{display:flex;gap:10px;}
+  .chat-input-row input{
+    flex:1;background:#050a0f;border:1px solid var(--line);color:var(--text);
+    font-family:var(--font-mono);font-size:13.5px;padding:12px 14px;border-radius:2px;
+  }
+  .chat-input-row input:focus{outline:none;border-color:var(--gold-dim);}
+  .chat-input-row button{
+    background:var(--gold);color:#0a0a0a;border:none;font-family:var(--font-display);
+    font-weight:600;font-size:13px;padding:0 20px;border-radius:2px;cursor:pointer;
+  }
+  .chat-input-row button:hover{background:#f0c455;}
+  .chat-hints{margin-top:10px;font-size:11.5px;color:var(--text-dim);}
+  .chat-hints button{
+    background:none;border:1px solid var(--line);color:var(--text-dim);
+    font-family:var(--font-mono);font-size:11px;padding:5px 9px;border-radius:2px;
+    margin:4px 6px 0 0;cursor:pointer;
+  }
+  .chat-hints button:hover{border-color:var(--gold-dim);color:var(--gold);}
+
+  /* mic button */
+  .mic-btn{
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--gold-dim);background:var(--panel-2);
+    color:var(--gold);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;position:relative;flex:none;
+  }
+  .mic-btn.listening{
+    background:rgba(255,75,62,0.15);border-color:var(--red);color:var(--red);
+    animation:mic-pulse 1.2s infinite;
+  }
+  @keyframes mic-pulse{0%{box-shadow:0 0 0 0 rgba(255,75,62,0.4);}70%{box-shadow:0 0 0 10px rgba(255,75,62,0);}100%{box-shadow:0 0 0 0 rgba(255,75,62,0);}}
+  .voice-caption{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:rgba(5,10,15,0.95);border:1px solid var(--gold-dim);
+    color:var(--gold);font-size:13px;padding:10px 18px;border-radius:3px;
+    max-width:90vw;text-align:center;z-index:50;display:none;
+  }
+  .voice-caption.show{display:block;}
+
+  footer{border-top:1px solid var(--line);margin-top:60px;padding:24px;text-align:center;color:var(--text-dim);font-size:11.5px;letter-spacing:0.04em;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="eyebrow">STARK INDUSTRIES OPERATING SYSTEM &nbsp;/&nbsp; MARK VII SUIT SYSTEM</p>
+      <h1 class="title">J.A.R.V.I.S.</h1>
+      <p class="subtitle">Just A Rather Very Intelligent System — tactical overview online</p>
+    </div>
+    <div class="status-pill"><span class="dot"></span> TACTICAL OVERVIEW: ONLINE</div>
+  </div>
+</header>
+
+<nav class="jump">
+  <div class="frame">
+    <a href="#mechanics">Suit Mechanics</a>
+    <a href="#origin">Origin</a>
+    <a href="#workshop">Workshop</a>
+    <a href="#specs">Armor Specs</a>
+    <a href="#log">Terminal Log</a>
+    <a href="#threats">Threat Database</a>
+    <a href="#chat">Talk to JARVIS</a>
+    <div class="mic-nav">
+      <button class="mic-btn" id="micBtn" title="Voice command">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="frame">
+
+  <!-- SUIT MECHANICS -->
+  <section id="mechanics">
+    <div class="section-head">
+      <h2 class="section-title">Mark VII Suit Mechanics</h2>
+      <span class="section-note">Live readout — simulated telemetry</span>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="metric">
+          <div class="metric-label"><span>ARC REACTOR OUTPUT</span><span class="val" id="v-arc">92%</span></div>
+          <div class="bar-track"><div class="bar-fill" id="b-arc" style="width:92%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><span>REPULSOR INTEGRITY</span><span class="val" id="v-rep">100%</span></div>
+          <div class="bar-track"><div class="bar-fill cyan" id="b-rep" style="width:100%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><span>FLIGHT THRUSTERS</span><span class="val" id="v-thr">85%</span></div>
+          <div class="bar-track"><div class="bar-fill" id="b-thr" style="width:85%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><span>DEFLECTOR SHIELDS</span><span class="val" id="v-shd">78%</span></div>
+          <div class="bar-track"><div class="bar-fill red" id="b-shd" style="width:78%"></div></div>
+        </div>
+        <button class="diag-btn" id="diagBtn">Run Diagnostic Sweep</button>
+      </div>
+      <div class="panel">
+        <div class="metric-label"><span>CORE STATUS</span></div>
+        <div id="coreStatus" style="font-size:13.5px;color:var(--green);margin-top:10px;">All systems nominal. No breaches detected on hull or HUD link.</div>
+        <div class="spec-row" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px;">
+          <div class="spec-key">PILOT LINK</div><div class="spec-val">Synced — Tony Stark</div>
+        </div>
+        <div class="spec-row"><div class="spec-key">LOCATION</div><div class="spec-val">Stark Industries R&amp;D, Malibu</div>
+        </div>
+        <div class="spec-row"><div class="spec-key">UPTIME</div><div class="spec-val" id="uptime">00:00:00</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORIGIN -->
+  <section id="origin">
+    <div class="section-head">
+      <h2 class="section-title">Origin</h2>
+      <span class="section-note">Classified file — Stark Industries archive</span>
+    </div>
+    <div class="panel">
+      <div class="origin-copy">
+        <p>J.A.R.V.I.S. began as a household management program built by Tony Stark to run diagnostics on his home and vehicles. Over successive rewrites, the system absorbed suit telemetry, workshop fabrication control, and eventually full HUD integration — becoming less an assistant and more a standing crew member.</p>
+        <p>The name is a tribute: Just A Rather Very Intelligent System, after Edwin Jarvis, the Stark family's butler. The persona — dry, unfailingly polite, quietly protective — was kept deliberately, so the system would talk to its pilot like someone who has earned the right to push back.</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-year">PHASE 1 — HOME OS</div>
+          <div class="timeline-text">House diagnostics, security, and calendar management across the Malibu residence.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">PHASE 2 — WORKSHOP INTEGRATION</div>
+          <div class="timeline-text">Given control of the fabrication bay: robotic arms, part inventory, and armor assembly sequencing.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">PHASE 3 — HUD &amp; FLIGHT LINK</div>
+          <div class="timeline-text">Wired directly into the Mark suits — real-time telemetry, targeting overlay, and voice-first control in flight.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">PHASE 4 — TACTICAL OS</div>
+          <div class="timeline-text">Current build. Threat tracking, diagnostic sweeps, and this interface — plus a voice channel so JARVIS can be addressed directly.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKSHOP -->
+  <section id="workshop">
+    <div class="section-head">
+      <h2 class="section-title">Workshop — Armory Archive</h2>
+      <span class="section-note">Fabrication bay inventory · fictional specifications</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-head"><span class="card-name">Mark II</span><span class="card-tag retired">Retired</span></div>
+        <p class="card-spec"><b>Chassis:</b> Bare silver alloy, no paint layer</p>
+        <p class="card-spec"><b>Role:</b> First flight-capable prototype</p>
+        <p class="card-spec"><b>Notes:</b> Retired after icing incident at high altitude</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-name">Mark VII</span><span class="card-tag">Active</span></div>
+        <p class="card-spec"><b>Chassis:</b> Gold-titanium, rapid-deploy pod capable</p>
+        <p class="card-spec"><b>Weaponry:</b> Dual palm repulsors, unibeam, micro-missiles</p>
+        <p class="card-spec"><b>Notes:</b> Current primary suit, full JARVIS HUD link</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-name">War Machine</span><span class="card-tag weapon">Heavy Ordnance</span></div>
+        <p class="card-spec"><b>Chassis:</b> Matte gunmetal military variant</p>
+        <p class="card-spec"><b>Weaponry:</b> Shoulder-mounted micro-missile rack, chain gun</p>
+        <p class="card-spec"><b>Notes:</b> Operated by Col. James Rhodes</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-name">Repulsor Array</span><span class="card-tag weapon">Weapon</span></div>
+        <p class="card-spec"><b>Type:</b> Palm-mounted directed energy</p>
+        <p class="card-spec"><b>Output:</b> Variable — stun to structural breach</p>
+        <p class="card-spec"><b>Notes:</b> Standard on every Mark since III</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-name">Micro-Missile Pods</span><span class="card-tag weapon">Weapon</span></div>
+        <p class="card-spec"><b>Type:</b> Laser-guided, shoulder or forearm mount</p>
+        <p class="card-spec"><b>Payload:</b> 6-round cluster, low-yield</p>
+        <p class="card-spec"><b>Notes:</b> Reserved for confirmed hostile targets</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-name">Unibeam</span><span class="card-tag weapon">Weapon</span></div>
+        <p class="card-spec"><b>Type:</b> Chest-mounted arc reactor discharge</p>
+        <p class="card-spec"><b>Output:</b> Highest single-shot yield in the arsenal</p>
+        <p class="card-spec"><b>Notes:</b> Draws directly from reactor core — cooldown required</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARMOR SPECS -->
+  <section id="specs">
+    <div class="section-head">
+      <h2 class="section-title">Mark VII Armor Specifications</h2>
+    </div>
+    <div class="panel">
+      <div class="spec-row"><div class="spec-key">CHASSIS</div><div class="spec-val">Gold-Titanium Alloy with Rapid Deploy Pod Capabilities</div></div>
+      <div class="spec-row"><div class="spec-key">WEAPONRY</div><div class="spec-val">Dual Palm Repulsors, Unibeam, Laser-Guided Micro-Missiles</div></div>
+      <div class="spec-row"><div class="spec-key">PROPULSION</div><div class="spec-val">Twin High-Velocity Back Thrusters &amp; Boot Stabilizers</div></div>
+      <div class="spec-row"><div class="spec-key">AI INTEGRATION</div><div class="spec-val">Cybernetic J.A.R.V.I.S. HUD Interface Link</div></div>
+    </div>
+  </section>
+
+  <!-- TERMINAL LOG -->
+  <section id="log">
+    <div class="section-head">
+      <h2 class="section-title">J.A.R.V.I.S. Terminal Log</h2>
+      <span class="section-note">Updates as you interact with voice or chat</span>
+    </div>
+    <div class="terminal" id="terminalLog">
+      <div class="line"><span class="tag">[SYSTEM]</span> Interface loaded.</div>
+      <div class="line"><span class="tag jarvis">[JARVIS]</span> "Good day, Sir. All Mark VII subsystems are online."</div>
+      <div class="line"><span class="tag">[SYSTEM]</span> Tactical map radar initialized.</div>
+    </div>
+  </section>
+
+  <!-- THREAT DATABASE -->
+  <section id="threats">
+    <div class="section-head">
+      <h2 class="section-title">Threat Database (Villain Records)</h2>
+    </div>
+    <div class="panel" style="padding:0;overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Target / Alias</th><th>Class</th><th>Threat Level</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Loki Laufeyson</td><td>Asgardian</td><td><span class="threat critical">CRITICAL</span></td><td class="status-tag">Tracked</td></tr>
+          <tr><td>Ultron Prime</td><td>Rogue AI</td><td><span class="threat extreme">EXTREME</span></td><td class="status-tag">Active Threat</td></tr>
+          <tr><td>Whiplash (Vanko)</td><td>Cybernetic</td><td><span class="threat moderate">MODERATE</span></td><td class="status-tag">Neutralized</td></tr>
+          <tr><td>Iron Monger</td><td>Armor Mech</td><td><span class="threat high">HIGH</span></td><td class="status-tag">Deactivated</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section id="chat">
+    <div class="section-head">
+      <h2 class="section-title">Talk to J.A.R.V.I.S.</h2>
+      <span class="section-note">Type, or use the mic in the top bar</span>
+    </div>
+    <div class="panel chat-shell">
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Ask JARVIS about the origin, the workshop, a threat, or a suit system...">
+        <button id="chatSend">Send</button>
+      </div>
+      <div class="chat-hints" id="chatHints"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="voice-caption" id="voiceCaption"></div>
+
+<footer>MARK VII TACTICAL OS &nbsp;·&nbsp; STARK INDUSTRIES &nbsp;·&nbsp; FAN INTERFACE, NON-COMMERCIAL</footer>
+
+<script>
+/* ---------------- knowledge base / rule engine ---------------- */
+const KB = [
+  { keys:["origin","start","begin","history","who made you","created"],
+    section:"origin",
+    say:"I began as a home management system, Sir. I now run diagnostics, the workshop fabrication bay, and full HUD integration on the Mark suits." },
+  { keys:["weapon","armament","arsenal","repulsor","missile","unibeam"],
+    section:"workshop",
+    say:"Current armory includes the palm repulsors, the unibeam, and laser-guided micro-missile pods. Full specifications are in the workshop archive." },
+  { keys:["workshop","armor","suit","mark"],
+    section:"workshop",
+    say:"The fabrication bay holds records for the Mark II, Mark VII, and War Machine, along with every weapon system fitted to them." },
+  { keys:["spec","chassis","propulsion","thruster"],
+    section:"specs",
+    say:"The Mark VII runs a gold-titanium chassis with rapid deploy pods, twin back thrusters, and boot stabilizers." },
+  { keys:["threat","villain","enemy","loki","ultron","vanko","iron monger"],
+    section:"threats",
+    say:"Four hostiles are on file. Ultron Prime remains an active, extreme-level threat. The others are tracked, neutralized, or deactivated." },
+  { keys:["reactor","power","output","shield","integrity"],
+    section:"mechanics",
+    say:"Arc reactor output is holding at 92 percent, with repulsor integrity at full. Deflector shields are the softest reading, at 78 percent." },
+  { keys:["diagnostic","sweep","status","health"],
+    section:"mechanics",
+    say:"Running a diagnostic sweep now, Sir. Give me a moment." },
+  { keys:["hello","hi","hey jarvis","good day"],
+    section:null,
+    say:"Good day, Sir. All Mark VII subsystems are online and ready." },
+  { keys:["thank","thanks"],
+    section:null,
+    say:"Always a pleasure, Sir." },
+  { keys:["who are you","what are you"],
+    section:null,
+    say:"J.A.R.V.I.S. — Just A Rather Very Intelligent System. I manage the suit, the workshop, and this terminal." }
+];
+const FALLBACK = "I don't have a file on that, Sir. Try asking about the origin, the workshop, a threat, or the suit's systems.";
+
+function matchKB(text){
+  const t = text.toLowerCase();
+  for(const entry of KB){
+    if(entry.keys.some(k => t.includes(k))) return entry;
+  }
+  return null;
+}
+
+function goToSection(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function logTerminal(tagClass, tagText, text){
+  const log = document.getElementById("terminalLog");
+  const div = document.createElement("div");
+  div.className = "line";
+  div.innerHTML = '<span class="tag ' + tagClass + '">[' + tagText + ']</span> ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ---------------- chat ---------------- */
+const chatLog = document.getElementById("chatLog");
+function addMsg(who, text){
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + (who === "You" ? "user" : "jarvis");
+  wrap.innerHTML = '<div class="who">' + who + '</div><div class="bubble">' + text + '</div>';
+  chatLog.appendChild(wrap);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+addMsg("JARVIS", "Good day, Sir. Ask me about the origin, the workshop, a threat on file, or the suit's systems.");
+
+const hintQs = ["Tell me about your origin", "What's in the workshop?", "Suit status?", "Any active threats?"];
+const hintsEl = document.getElementById("chatHints");
+hintQs.forEach(q=>{
+  const b = document.createElement("button");
+  b.textContent = q;
+  b.onclick = () => { document.getElementById("chatInput").value = q; sendChat(); };
+  hintsEl.appendChild(b);
+});
+
+function sendChat(){
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if(!text) return;
+  addMsg("You", text);
+  input.value = "";
+  const match = matchKB(text);
+  const reply = match ? match.say : FALLBACK;
+  setTimeout(()=>{
+    addMsg("JARVIS", reply);
+    logTerminal("jarvis", "JARVIS", '"' + reply + '"');
+    if(match && match.section) goToSection(match.section);
+  }, 250);
+}
+document.getElementById("chatSend").onclick = sendChat;
+document.getElementById("chatInput").addEventListener("keydown", e => { if(e.key === "Enter") sendChat(); });
+
+/* ---------------- voice assistant ---------------- */
+const micBtn = document.getElementById("micBtn");
+const caption = document.getElementById("voiceCaption");
+let recognition = null;
+let listening = false;
+
+function showCaption(text){
+  caption.textContent = text;
+  caption.classList.add("show");
+  clearTimeout(showCaption._t);
+  showCaption._t = setTimeout(()=>caption.classList.remove("show"), 4500);
+}
+
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.0;
+  utter.pitch = 0.85;
+  window.speechSynthesis.speak(utter);
+}
+
+function handleVoiceCommand(text){
+  logTerminal("tag", "VOICE", '"' + text + '"');
+  const match = matchKB(text);
+  const reply = match ? match.say : FALLBACK;
+  showCaption(reply);
+  speak(reply);
+  logTerminal("jarvis", "JARVIS", '"' + reply + '"');
+  addMsg("You (voice)", text);
+  addMsg("JARVIS", reply);
+  if(match && match.section) goToSection(match.section);
+}
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SR){
+  recognition = new SR();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => { listening = true; micBtn.classList.add("listening"); showCaption("Listening..."); };
+  recognition.onend = () => { listening = false; micBtn.classList.remove("listening"); };
+  recognition.onerror = () => { listening = false; micBtn.classList.remove("listening"); showCaption("Didn't catch that, Sir."); };
+  recognition.onresult = (e) => {
+    const said = e.results[0][0].transcript;
+    handleVoiceCommand(said);
+  };
+
+  micBtn.addEventListener("click", () => {
+    if(listening){ recognition.stop(); return; }
+    try{ recognition.start(); } catch(err){ /* already started */ }
+  });
+} else {
+  micBtn.addEventListener("click", () => {
+    showCaption("Voice recognition isn't supported in this browser — try Chrome or Edge.");
+  });
+}
+
+/* ---------------- diagnostic sweep ---------------- */
+document.getElementById("diagBtn").addEventListener("click", () => {
+  const bars = [
+    {id:"arc", low:70, high:99},
+    {id:"rep", low:80, high:100},
+    {id:"thr", low:60, high:95},
+    {id:"shd", low:55, high:90}
+  ];
+  logTerminal("tag", "SYSTEM", "Diagnostic sweep initiated...");
+  document.getElementById("coreStatus").textContent = "Running full diagnostic sweep across suit subsystems...";
+  bars.forEach(b=>{
+    const val = Math.floor(b.low + Math.random()*(b.high-b.low));
+    document.getElementById("b-"+b.id).style.width = val + "%";
+    document.getElementById("v-"+b.id).textContent = val + "%";
+  });
+  setTimeout(()=>{
+    document.getElementById("coreStatus").textContent = "Diagnostic sweep complete. All systems within tolerance.";
+    logTerminal("jarvis", "JARVIS", '"Diagnostic sweep complete, Sir. All systems within tolerance."');
+  }, 1400);
+});
+
+/* ---------------- uptime ---------------- */
+const start = Date.now();
+setInterval(()=>{
+  const s = Math.floor((Date.now()-start)/1000);
+  const hh = String(Math.floor(s/3600)).padStart(2,"0");
+  const mm = String(Math.floor((s%3600)/60)).padStart(2,"0");
+  const ss = String(s%60).padStart(2,"0");
+  document.getElementById("uptime").textContent = hh+":"+mm+":"+ss;
+}, 1000);
+
+/* ---------------- nav active state ---------------- */
+const navLinks = document.querySelectorAll("nav.jump a");
+const sections = document.querySelectorAll("section");
+window.addEventListener("scroll", () => {
+  let current = "";
+  sections.forEach(sec => {
+    if(window.scrollY >= sec.offsetTop - 80) current = sec.id;
+  });
+  navLinks.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#"+current));
+});
+</script>
+</body>
+</html>
